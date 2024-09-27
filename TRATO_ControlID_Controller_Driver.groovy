@@ -40,6 +40,8 @@ metadata {
   }   
   
 command "AbrirSecBox"
+command "FecharSecBox"
+command "Restart"
 attribute "StatusSecBox", "string"
 
 
@@ -73,7 +75,9 @@ def on() {
 
 def off() {
      sendEvent(name: "StatusSecBox", value: "Fechada", isStateChange: true)
-    //     sendCommand(off)
+     sendEvent(name: "switch", value: "off", isStateChange: true)
+     FecharSecBox() 
+    
 }
 
 
@@ -88,13 +92,13 @@ def AtualizaIP(ipADD) {
 
 def AtualizaSession(sessionid) {
     state.varsession = sessionid
-    log.info "Session ID atualizada " +  state.varsession    
+    log.debug "Session ID atualizada " +  state.varsession    
 }
 
 
 def AtualizaStatusSecBox(statusSec) {
     state.varstatussec = statusSec
-    log.info "Status do SecBox Atualizado " +  state.varstatussec  
+    log.debug "Status do SecBox Atualizado " +  state.varstatussec  
     
     if (state.varstatussec == true) { 
        sendEvent(name: "StatusSecBox", value: "Aberta", isStateChange: true)      
@@ -117,7 +121,7 @@ def AbrirSecBox(){
         contentType: "application/json",
         body: '{"actions": [{"action": "sec_box","parameters": "id=65793,reason=3,timeout=3000"}]}'       
 	    ]
-        //log.info postParams
+        log.debug postParams
 	asynchttpPost('myCallbackMethodAbrirSecBox', postParams)
     
 }
@@ -132,6 +136,58 @@ def myCallbackMethodAbrirSecBox(response, data) {
 
     }else {        
         log.info "SecBox Failed: Status = ${response.getStatus()} -  " 
+    } 
+
+}
+
+
+///////   AbrirSecBox  ///////////
+def FecharSecBox(){
+    
+    def postParams = [
+		uri: "http://" + state.currentip + "/execute_actions.fcgi?session=" + state.varsession,
+        contentType: "application/json",
+        body: '{"actions": [{"action": "sec_box","parameters": "id=65793,reason=3,timeout=-1"}]}'       
+	    ]
+        log.debug postParams
+	asynchttpPost('myCallbackMethodFecharSecBox', postParams)
+    
+}
+
+def myCallbackMethodFecharSecBox(response, data) {
+    if (response.getStatus() == 200) {        
+        log.info "SecBox FECHADA "
+        sendEvent(name: "StatusSecBox", value: "Fechada", isStateChange: true) 
+        sendEvent(name: "switch", value: "off", isStateChange: true)
+        pauseExecution(300)     
+
+
+    }else {        
+        log.info "SecBox Failed: Status = ${response.getStatus()} -  " 
+    } 
+
+}
+
+
+///////   AbrirSecBox  ///////////
+def Restart(){
+    
+    def postParams = [
+		uri: "http://" + state.currentip + "/reboot.fcgi?session=" + state.varsession,
+        contentType: "application/json"
+      
+	    ]
+        log.debug postParams
+	asynchttpPost('myCallbackMethodRestart', postParams)
+    
+}
+
+def myCallbackMethodRestart(response, data) {
+    if (response.getStatus() == 200) {        
+        log.info "Modulo Reiniciado"
+ 
+    }else {        
+        log.info "Restart Failed: Status = ${response.getStatus()} -  " 
     } 
 
 }
