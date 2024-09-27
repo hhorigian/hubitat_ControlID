@@ -18,8 +18,9 @@
 *  VH - 2024 
 *
 *  Version 1.0.0 - Limited Release
+*  Version 1.0.1 - Added Close SecBox, Restart Function 
 *
- */
+*/
 
 metadata {
   definition (name: "ControlID Controller Driver", namespace: "TRATO", author: "VH", vid: "generic-contact") {
