@@ -107,7 +107,7 @@ def initialize() {
     }
     DoLogin()
     
-        schedule("*/${pollFrequency} * * ? * * *", VerifySession, [overwrite: false])  // usualmente cada 1 seg.       
+        schedule("* 0/30 * ? * * *", VerifySession, [overwrite: false])  // default 30 minutos seg.       
         schedule("*/5 * * ? * * *", VerifyDoorStatus, [overwrite: false])  // usualmente cada 1 seg.       
 
        logDebug "Configuro a frequência de atualização para cada  ${verifysessionfrequency} minute(s)"       
@@ -145,7 +145,7 @@ def myCallbackMethodLogin(response, data) {
         
         
     }else {        
-        log.info "Login/Response Failed: Status = ${response.getStatus()} - IP " + settings.molIPAddress
+        log.info "Login Failed: Status = ${response.getStatus()} - IP " + settings.molIPAddress
     } 
     VerifySession()
 }
@@ -164,23 +164,26 @@ def VerifySession(){
 }
 
 def myCallbackMethodVerify(response, data) {
-    if  ( (response.getStatus() == 200) || (varsessionvalid == "true") )  {
-        
+       
+    if  (response.getStatus() == 200) {        
         log.info "Session is Valid - IP " + settings.molIPAddress +  " - sesssion Verified = " + state.varsession
         def jsonSlurper = new JsonSlurper()
         def object = jsonSlurper.parseText(response.getData()) 
 		//log.info "Session is valid = " + object.session_is_valid 
-        state.varsessionvalid = object.session_is_valid
+        state.varsessionvalid = object.session_is_valid        
 
-        //coloco o session id 
-        def devices = getAllChildDevices()
-        for (aDevice in devices)
-        {             
-        aDevice.AtualizaSession(state.varsession)  
-        logDebug "Atualizo o Session ID no ControlID Device = $aDevice"    
-        }
-
-    }else {        
+            if ( state.lastsessionid != state.varsession ) {
+            //coloco o session id 
+            def devices = getAllChildDevices()
+            for (aDevice in devices)
+            {             
+            aDevice.AtualizaSession(state.varsession)  
+            logDebug "Atualizo o Session ID no ControlID Device = $aDevice"    
+            }
+            }
+                
+        state.lastsessionid = state.varsession
+    }   else {        
         log.info "Session Invalid/Response Failed: Status = ${response.getStatus()} - IP " + settings.molIPAddress +  " sesssion id = " + state.varsession
         DoLogin()
     } 
@@ -196,6 +199,7 @@ def VerifyDoorStatus(){
         contentType: "application/json"
         //body: '{session=' + varsession 
 	]
+    //log.debug "postParams VerifyDoorStatus = " + postParams
     asynchttpPost('myCallbackMethodStatus', postParams)
 
 }
@@ -203,11 +207,13 @@ def VerifyDoorStatus(){
 def myCallbackMethodStatus(response, data) {
     if  ( (response.getStatus() == 200)  )  {
         
-        log.info "Entrou para o Status do SecBox" 
+        //log.info "Entrou para o Status do SecBox" 
         def jsonSlurper = new JsonSlurper()
         def object = jsonSlurper.parseText(response.getData()) 
         state.varstatussec = object.sec_boxes.open[1]
-        log.info "Status da Porta - state.varstatussec " + state.varstatussec 
+        
+        if ( state.laststatusstec != state.varstatussec ) {
+        log.debug "Alteracao de  Status da Porta. Agora =  " + state.varstatussec     
         //coloco o status da porta no device 
         def devices = getAllChildDevices()
         for (aDevice in devices)
@@ -215,10 +221,16 @@ def myCallbackMethodStatus(response, data) {
         aDevice.AtualizaStatusSecBox(state.varstatussec)  
         logDebug "Atualizo o SecBox Status no Driverce = $aDevice"    
         }
+        }    
+        
+        state.laststatusstec = state.varstatussec
 
     }else {        
         log.info "SecBox Status Failed: Status = ${response.getStatus()} - IP " + settings.molIPAddress +  " sesssion id = " + state.varsession
-        //DoLogin()
+        if ( response.getStatus() == 401)    {
+            log.info "Failed Login. Trying Login Process."
+            DoLogin() 
+        }
     } 
     
 }
