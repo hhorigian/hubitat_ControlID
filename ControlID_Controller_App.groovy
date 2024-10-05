@@ -21,7 +21,7 @@
 
 definition(
     name: "ControlID Controller - App",
-    namespace: "TRATO",
+    namespace: "VH",
     author: "VH",
     description: "ControlID Controller para Hubitat",
     category: "Lights",
@@ -85,7 +85,7 @@ def initialize() {
 	    logDebug "initialize(): adding driver = " + contactName
         
         def contactDev = getChildDevice(contactName)
-	    if(!contactDev) contactDev = addChildDevice("TRATO", "ControlID Controller Driver", contactName, null, [name: "ControlIDCTRL " + Integer.toString(i), inputNumber: thisName])
+	    if(!contactDev) contactDev = addChildDevice("CID", "ControlID Controller Driver", contactName, null, [name: "ControlIDCTRL " + Integer.toString(i), inputNumber: thisName])
  
           //create a random number to assign to the controller
           randomDecimal = Math.random()

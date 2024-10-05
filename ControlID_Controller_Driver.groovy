@@ -23,7 +23,7 @@
 */
 
 metadata {
-  definition (name: "ControlID Controller Driver", namespace: "TRATO", author: "VH", vid: "generic-contact") {
+  definition (name: "ControlID Controller Driver", namespace: "VH", author: "VH", vid: "generic-contact") {
     capability "Contact Sensor"
     capability "Sensor"
     capability "Switch"  
