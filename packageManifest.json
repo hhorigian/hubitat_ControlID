@@ -1,0 +1,28 @@
+{
+ "packageName":"Control ID - Controller",
+ "author":"VH",
+ "version":"1.1",
+ "minimumHEVersion":"2.3.7.100",
+ "dateReleased":"2024-10-05",
+ "releaseNotes":"First Version",
+ "apps": [
+  {
+     "id":"62860f82-d431-4c93-bb40-bab166e24aa6",
+     "name":"ControlID Controller - App",
+     "namespace":"VH",
+     "location":"https://raw.githubusercontent.com/hhorigian/hubitat_ControlID/refs/heads/master/ControlID_Controller_App.groovy",
+     "required":true,
+     "oauth":false,
+     "primary":true
+  }
+  ],
+ "drivers": [
+  {
+     "id":"371abbc6-1e05-4f30-ae5e-1b820624a139",
+     "name":"ControlID Controller - Driver",
+     "namespace":"VH",
+     "location":"https://raw.githubusercontent.com/hhorigian/hubitat_ControlID/refs/heads/master/ControlID_Controller_Driver.groovy",
+     "required":true
+  }
+  ]
+}
