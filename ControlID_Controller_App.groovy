@@ -17,7 +17,7 @@
 *  VH - 2024 
 *
 *  Version 1.0.0 - Limited Release
-*  Version 1.0.1 - Added login/password fields in preferences
+*  Version 1.2    - Added login/password fields in preferences
  */
 
 definition(
