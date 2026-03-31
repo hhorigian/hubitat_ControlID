@@ -1,10 +1,10 @@
 {
  "packageName":"Control ID - Controller",
  "author":"VH",
- "version":"1.1",
+ "version":"1.2",
  "minimumHEVersion":"2.3.7.100",
- "dateReleased":"2024-10-05",
- "releaseNotes":"First Version",
+ "dateReleased":"2026-3-31",
+ "releaseNotes":"Fixes",
  "apps": [
   {
      "id":"62860f82-d431-4c93-bb40-bab166e24aa6",
