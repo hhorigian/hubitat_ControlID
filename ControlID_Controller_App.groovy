@@ -17,6 +17,7 @@
 *  VH - 2024 
 *
 *  Version 1.0.0 - Limited Release
+*  Version 1.0.1 - Added login/password fields in preferences
  */
 
 definition(
@@ -42,15 +43,13 @@ def mainPage() {
         input "thisName", "text", title: "Nome personalizado para o Módulo", submitOnChange: true
 		if(thisName) app.updateLabel("$thisName")
         input name: "molIPAddress", type: "text", title: "ControlID IP Address", submitOnChange: true, required: true, defaultValue: "192.168.1.208" 
+        input name: "cidLogin", type: "text", title: "Login", required: true, defaultValue: "admin"
+        input name: "cidPassword", type: "password", title: "Senha", required: true, defaultValue: "admin"
         input name: "debugOutput", type: "bool", title: "Habilitar Log", defaultValue: false        
         input name: "pollFrequency", type: "number", title: "Frequência para obter o feedback do status (em segundos)", defaultValue: 30
-        //input name: "relaycount", type: "text", title: "MolSmart Relay Count", required: false, defaultValue: "3"         
-        
     }
     }
 
-//verifysessionfrequency = "30"
-//@Field static Integer checkInterval = 600
    
     
 }
@@ -78,14 +77,13 @@ def initialize() {
 
     unschedule()
     state.varsessionvalid = "false"
-    //if (state.childscreated == 0) {
-        
+    
     for(int i = 1; i<= 1 ; i++) {
         def contactName = "ControlID-" + Integer.toString(i) + "_${app.id}"
 	    logDebug "initialize(): adding driver = " + contactName
         
         def contactDev = getChildDevice(contactName)
-	    if(!contactDev) contactDev = addChildDevice("CID", "ControlID Controller Driver", contactName, null, [name: "ControlIDCTRL " + Integer.toString(i), inputNumber: thisName])
+	    if(!contactDev) contactDev = addChildDevice("VH", "ControlID Controller Driver", contactName, null, [name: "ControlIDCTRL " + Integer.toString(i), inputNumber: thisName])
  
           //create a random number to assign to the controller
           randomDecimal = Math.random()
@@ -111,14 +109,7 @@ def initialize() {
         schedule("*/5 * * ? * * *", VerifyDoorStatus, [overwrite: false])  // usualmente cada 1 seg.       
 
        logDebug "Configuro a frequência de atualização para cada  ${verifysessionfrequency} minute(s)"       
-        //schedule("*/${pollFrequency} * * ? * * *", VerifySession, [overwrite: false])  // usualmente cada 1 seg.   
         state.childscreated = 1  
-        
-    /*} 
-    else
-    {
-        log.info "Childs já foram criados"    
-    }*/
       
 }
 
@@ -126,10 +117,13 @@ def initialize() {
 ///////   LOGIN  ///////////
 def DoLogin(){
     
+    def loginUser = settings.cidLogin ?: "admin"
+    def loginPass = settings.cidPassword ?: "admin"
+    
     def postParams = [
 		uri: "http://" + settings.molIPAddress + "/login.fcgi",
         contentType: "application/json",
-        body: '{"login": "admin","password": "admin"}'
+        body: "{\"login\": \"${loginUser}\",\"password\": \"${loginPass}\"}"
 	]
 	asynchttpPost('myCallbackMethodLogin', postParams)
     
@@ -157,7 +151,6 @@ def VerifySession(){
     def postParams = [
 		uri: "http://" + settings.molIPAddress + "/session_is_valid.fcgi?session=" + state.varsession ,
         contentType: "application/json"
-        //body: '{session=' + varsession 
 	]
     asynchttpPost('myCallbackMethodVerify', postParams)
     
@@ -197,9 +190,7 @@ def VerifyDoorStatus(){
     def postParams = [
 		uri: "http://" + settings.molIPAddress + "/doors_state.fcgi?session=" + state.varsession ,
         contentType: "application/json"
-        //body: '{session=' + varsession 
 	]
-    //log.debug "postParams VerifyDoorStatus = " + postParams
     asynchttpPost('myCallbackMethodStatus', postParams)
 
 }
@@ -207,7 +198,6 @@ def VerifyDoorStatus(){
 def myCallbackMethodStatus(response, data) {
     if  ( (response.getStatus() == 200)  )  {
         
-        //log.info "Entrou para o Status do SecBox" 
         def jsonSlurper = new JsonSlurper()
         def object = jsonSlurper.parseText(response.getData()) 
         state.varstatussec = object.sec_boxes.open[1]
