@@ -1,5 +1,5 @@
 /**
- *  ControlID Driver-BETA01
+ *  ControlID Driver-BETA001
  *
  *  Copyright 2024 VH
  *
@@ -19,6 +19,7 @@
 *
 *  Version 1.0.0 - Limited Release
 *  Version 1.0.1 - Added Close SecBox, Restart Function 
+*  Version 1.2 - Added Lock Capability
 *
 */
 
@@ -27,6 +28,7 @@ metadata {
     capability "Contact Sensor"
     capability "Sensor"
     capability "Switch"  
+    capability "Lock"      
   }
       
   }
@@ -69,7 +71,7 @@ def uninstalled() {
 def on() {
      sendEvent(name: "switch", value: "on", isStateChange: true)
      sendEvent(name: "StatusSecBox", value: "Aberta", isStateChange: true)      
-
+     sendEvent(name: "lock", value: "unlocked", isStateChange: true)
      AbrirSecBox() 
 }
 
@@ -77,10 +79,20 @@ def on() {
 def off() {
      sendEvent(name: "StatusSecBox", value: "Fechada", isStateChange: true)
      sendEvent(name: "switch", value: "off", isStateChange: true)
+     sendEvent(name: "lock", value: "locked", isStateChange: true)   
      FecharSecBox() 
     
 }
 
+
+def lock() {
+    off()
+}
+
+
+def unlock() {
+    on()
+}
 
 def AtualizaIP(ipADD) {
     state.currentip = ipADD
@@ -104,11 +116,12 @@ def AtualizaStatusSecBox(statusSec) {
     if (state.varstatussec == true) { 
        sendEvent(name: "StatusSecBox", value: "Aberta", isStateChange: true)      
         sendEvent(name: "switch", value: "on", isStateChange: true)
-           
+        sendEvent(name: "lock", value: "unlocked", isStateChange: true)           
         }else
       {
        sendEvent(name: "StatusSecBox", value: "Fechada", isStateChange: true)  
        sendEvent(name: "switch", value: "off", isStateChange: true)
+       sendEvent(name: "lock", value: "locked", isStateChange: true)            
       }
     
 }
@@ -202,4 +215,3 @@ private logDebug(msg) {
     log.debug "$msg"
   }
 }
-
